@@ -1,6 +1,7 @@
 # /// script
+# description = "Embed text from pdfs"
 # requires-python = ">=3.10, <3.13"
-# dependencies = ["daft", "pymupdf", "sentence_transformers", "spacy"]
+# dependencies = ["daft", "pymupdf", "sentence_transformers", "spacy","pip"]
 # ///
 
 import daft
@@ -8,6 +9,7 @@ from daft import col, DataType
 from daft.functions import embed_text, unnest
 import io
 import pymupdf
+import spacy
 
 @daft.func(return_dtype=
     DataType.list(DataType.struct({
@@ -54,8 +56,7 @@ def extract_pdf_as_html(doc: bytes):
 })))
 class SpaCyChunkText:
     def __init__(self):
-        import spacy
-        self.nlp = spacy.load("en_core_web_trf")
+        self.nlp = spacy.load("en_core_web_sm") # use en_core_web_trf for higher accuracy
 
     def __call__(self, texts):
         sentence_texts = []
@@ -75,48 +76,37 @@ class SpaCyChunkText:
         
 if __name__ == "__main__":
 
-    MODEL_ID = "google/embeddinggemma-300m"
+    MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
     MAX_DOCS = 1
 
     # Config
     uri = "hf://datasets/Eventual-Inc/sample-files/papers/*.pdf"
 
+    # Download the spacy model
+    spacy.cli.download("en_core_web_sm")
+
     # Discover and download pdfs
     df = (
         daft.from_glob_path(uri).limit(MAX_DOCS)
         .with_column("documents", col("path").url.download()) 
-    )
-    #df.show() # Optionally show the dataframe
-
-    # Extract text from pdf pages
-    df = (
-        df
+        
+        # Extract text from pdf pages
         .with_column("pages", extract_pdf_as_html(col("documents")))
         .explode("pages")
         .select(col("path"), unnest(col("pages")))
-    )
-    #df.show()
-
-    # Chunk page text into sentences
-    df = (
-        df
+        
+        # Chunk page text into sentences
         .with_column("text_normalized", col("text").normalize(nfd_unicode=True, white_space=True))
         .with_column("sentences", SpaCyChunkText(col("text_normalized")))
         .explode("sentences")
         .select(col("path"), col("page_number"), unnest(col("sentences")))
         .where(col("sent_end") - col("sent_start") > 1) # remove sentences that are too short
-    )   
-    #df.show()
 
-    # Embed sentences
-    df = (
-        df
+        # Embed sentences
         .with_column(f"text_embed_{MODEL_ID.split('/')[1]}", embed_text(col("sent_text"), provider="sentence_transformers", model=MODEL_ID))
     )
-    #df.show()
 
-    # Write to parquet
-    df.write_parquet(f"data/eventual_sample_pdf_sentence_embeddings.parquet")
+    df.write_parquet(f"data/pdf_sentence_embeddings.parquet")
 
     df.show()
 
