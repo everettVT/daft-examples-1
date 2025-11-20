@@ -1,4 +1,4 @@
-.PHONY: setup test-classify test-commoncrawl test-embed test-io test-prompt test-udfs test-all
+.PHONY: setup test-classify test-commoncrawl test-embed test-io test-prompt test-segment test-udfs test-all
 
 # Environment setup
 setup:
@@ -42,9 +42,13 @@ test-prompt:
 	uv run usage_patterns/prompt/prompt_session.py
 	uv run usage_patterns/prompt/prompt_structured_outputs.py
 
+# usage_patterns/segment
+test-segment:
+	uv run usage_patterns/segment/segment_sam3.py
+
 # usage_patterns/udfs
 test-udfs:
 	uv run usage_patterns/udfs/daft_cls_with_types.py
 	uv run usage_patterns/udfs/daft_func.py
 
-test-all: test-classify test-commoncrawl test-embed test-io test-prompt test-udfs
+test-all: test-classify test-commoncrawl test-embed test-io test-prompt test-segment test-udfs

@@ -63,6 +63,9 @@ AWS_SECRET_ACCESS_KEY=...
 - [`classify/classify_image.py`](usage_patterns/classify/classify_image.py) - Classify images using CLIP model with custom labels
 - [`classify/classify_text.py`](usage_patterns/classify/classify_text.py) - Multi-label text classification using BART model
 
+### Segmentation
+- [`segment/segment_sam3.py`](usage_patterns/segment/segment_sam3.py) - Segment images using SAM3 (Segment Anything Model 3) as a daft.cls UDF
+
 ### Common Crawl
 - [`commoncrawl/chunk_embed.py`](usage_patterns/commoncrawl/chunk_embed.py) - Process Common Crawl data: chunk text with spaCy and embed sentences
 - [`commoncrawl/show.py`](usage_patterns/commoncrawl/show.py) - Query and display MIME types from Common Crawl datasets
