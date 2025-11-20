@@ -10,7 +10,6 @@ from typing import Any
 import torch
 from transformers import AutoProcessor, AutoModelForImageSegmentation
 from PIL import Image
-import io
 
 
 @daft.cls()
@@ -123,10 +122,7 @@ if __name__ == "__main__":
     
     # Example 2: Using local images (if available)
     # Create synthetic example for demonstration
-    import numpy as np
-    
-    # Create a simple test image
-    test_image = Image.new('RGB', (512, 512), color='red')
+    # test_image = Image.new('RGB', (512, 512), color='red')
     
     # Create a dataframe with the test image
     print("\n=== SAM3 Segmentor Demo ===")
